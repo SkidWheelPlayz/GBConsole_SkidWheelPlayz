@@ -94,14 +94,14 @@ int vid_getScreenHeight()
 // Gets the given textures width
 int vid_getTextureWidth(VidTexture* t)
 {
-	if(t > 0) return ((SDL_Surface*)t)->w;
+	if(t != 0) return ((SDL_Surface*)t)->w;
 	return 0;
 }
 
 // Gets the given textures height
 int vid_getTextureHeight(VidTexture* t)
 {
-	if(t > 0) return ((SDL_Surface*)t)->h;
+	if(t != 0) return ((SDL_Surface*)t)->h;
 	return 0;
 }
 
@@ -142,7 +142,7 @@ void vid_drawBox(int x, int y, int w, int h, unsigned char r, unsigned char g, u
 // Draws a texture to the video buffer
 void vid_drawTexture(VidTexture* t, int x, int y)
 {
-	if(vid_scrMain && t > 0) {
+	if(vid_scrMain && t != 0) {
 		SDL_Surface* tSurface = (SDL_Surface*)t;
 		SDL_Rect offset = {(signed short)x, (signed short)y, 0, 0};
 		SDL_BlitSurface(tSurface, NULL, vid_scrMain, &offset);
@@ -256,7 +256,7 @@ void vid_compositeColorToTexture(VidTexture* t, unsigned char r, unsigned char g
 // Clears memory for the given texture
 void vid_clearTexture(VidTexture* t)
 {
-	if(t > 0) {
+	if(t != 0) {
 		SDL_Surface* tSurface = (SDL_Surface*)t;
 		if(tSurface) SDL_FreeSurface(tSurface);
 	}
