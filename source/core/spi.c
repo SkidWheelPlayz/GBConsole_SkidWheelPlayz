@@ -16,7 +16,7 @@
 #define BLOCK_SIZE              (4*1024)
 
 /// Base Physical Address of the BCM 2835 peripheral registers
-#define BCM2835_PERI_BASE               0x20000000
+#define BCM2835_PERI_BASE               0x3F000000
 #define BCM2835_GPIO_BASE               (BCM2835_PERI_BASE + 0x200000)
 #define BCM2835_SPI0_BASE               (BCM2835_PERI_BASE + 0x204000)
 
