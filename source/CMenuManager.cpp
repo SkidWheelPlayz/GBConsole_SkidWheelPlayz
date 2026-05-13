@@ -594,7 +594,7 @@ void CMenuManager::endProgressBar()
 //! Shows the given text in the bottom right corner until selection or page is changed
 void CMenuManager::showLoadingText(const char* text)
 {
-	if(text > 0) {
+	if(text != 0) {
 		unsigned char cursorLayer = cursor->getLayer();
 		unsigned char dpadIconLayer = dpadIcon->getLayer();
 		unsigned char dpadTextLayer = dpadText->getLayer();
@@ -738,7 +738,7 @@ int CMenuManager::getNextSelection(char dir)
 			break;
 		}
 	}
-	if(selectedNode > 0) {
+	if(selectedNode != 0) {
 		int upDownSearchRange = 1000;
 		int leftRightSearchRange = 200;
 		int range = upDownSearchRange;
@@ -769,7 +769,7 @@ int CMenuManager::getNextSelection(char dir)
 				}
 			}
 		}
-		if(closestNode > 0) {
+		if(closestNode != 0) {
 			return closestNode->getNavPath();
 		}
 	}
@@ -1073,7 +1073,7 @@ CSceneNode* CMenuManager::setCarouselIndex(int index, bool updateCursor, bool* n
 		} else {
 		
 			//animation
-			if(noAnimation>0 && !(*noAnimation) && index != carouselIndex) {
+			if(noAnimation != 0 && !(*noAnimation) && index != carouselIndex) {
 				carouselTargetX = carouselOffset;
 				if(page != carouselPage) {
 					if(index > carouselIndex) positionCarousel(carouselOffset + (height+spacing));
