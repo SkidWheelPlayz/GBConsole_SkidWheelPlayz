@@ -789,12 +789,12 @@ void CMenuManager::render()
 	//sleep to maintain MENU_FRAME_RATE
 	long currTime = clock();
 	double diff = (double)(currTime - time) / CLOCKS_PER_SEC;
-/*	if(diff < (1.0/MENU_FRAME_RATE)) {
+	if(diff < (1.0/MENU_FRAME_RATE)) {
 		long usec = ((1.0/MENU_FRAME_RATE) - diff)*1000*1000;
 		struct timespec ts;
 		ts.tv_sec = usec / 1000000;
 		ts.tv_nsec = (usec % 1000000) * 1000;
-		nanosleep(&ts, &ts); */
+		nanosleep(&ts, &ts);
 	}
 	
 	//settings page values
