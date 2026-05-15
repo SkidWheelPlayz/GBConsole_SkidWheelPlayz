@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <time.h>
 
-#define SPI_CLK_SPEED 10000000
+#define SPI_CLK_SPEED 16000000
 #define NRF_SPI_KEY 0x7258AE90
 
 #define PIN_CE 19
