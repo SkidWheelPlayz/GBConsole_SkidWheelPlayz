@@ -39,7 +39,7 @@
 #define MENU_MAX_MODAL_BUTTONS 4
 
 #define MENU_FRAME_RATE 60
-#define MENU_PROGRESS_BAR_UPDATE_MILLIS 500
+#define MENU_PROGRESS_BAR_UPDATE_MILLIS 100
 
 class CSettingsManager;
 class CSceneManager;
