@@ -22,7 +22,7 @@
 #include <inp.h>
 #include <gbx.h>
 
-#define SPI_CLK_SPEED 10000000
+#define SPI_CLK_SPEED 16000000
 
 #define BUTTON_AUTO_SCROLL_HOLD 10
 #define BUTTON_DELETE_HOLD 30
