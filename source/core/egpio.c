@@ -2,7 +2,7 @@
 #include "spi.h"
 #include <stdio.h>
 
-#define SPI_CLK_SPEED 16000000
+#define SPI_CLK_SPEED 32000000
 
 #define CHIPA_READ   0x49
 #define CHIPA_WRITE  0x48
