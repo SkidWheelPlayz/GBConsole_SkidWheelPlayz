@@ -1,3 +1,4 @@
+IMPORTANT: WHEN INSTALLING KEEP DEFAULT "pi" USERNAME
 # GameBoy Console
 The GameBoy Console is an emulator that plays physical GameBoy, GameBoy Color and GameBoy Advance cartridges on your TV! The goal of this project is to provide an inexpensive solution for revisiting beloved GameBoy games on the big screen and help preserve cartridge save data.
 
