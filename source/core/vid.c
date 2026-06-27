@@ -3,7 +3,7 @@
 #include <string.h> 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
-#include <SDL2/SDL_rotozoom.h>
+#include <SDL2/SDL2_rotozoom.h>
 #include <SDL2/SDL_ttf.h>
 
 #define INIT_FLAG_NOT 0
