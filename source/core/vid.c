@@ -36,6 +36,7 @@ int vid_init()
 			fprintf(stderr, "vid_init: ERROR in SDL_Init() %s\n", SDL_GetError());
 			vid_close();
 			return 1;
+			}
 		}
 		if(!(IMG_Init(imgFlags) & imgFlags )) {
 			fprintf(stderr, "vid_init: ERROR in IMG_Init() %s\n", IMG_GetError());
@@ -50,8 +51,7 @@ int vid_init()
 	
 		//get current screen info
 		SDL_DisplayMode mode;
-		if (SDL_GetCurrentDisplayMode(0, &mode) != 0)
-		{
+		if (SDL_GetCurrentDisplayMode(0, &mode) != 0) {
    			fprintf(stderr, "%s\n", SDL_GetError());
     		return 1;
 		}
@@ -68,8 +68,7 @@ int vid_init()
     		SDL_WINDOW_SHOWN
 		);
 
-		if (!vid_window)
-		{
+		if (!vid_window) {
    			fprintf(stderr,"%s\n",SDL_GetError());
     		return 1;
 		}
@@ -81,61 +80,54 @@ int vid_init()
 
 	vid_isInitFlag = INIT_FLAG_FULL;
 	return 0;
-}
+	}
 
 // Gets the current width of the screen
-int vid_getScreenWidth()
-{
+int vid_getScreenWidth() {
 	if(vid_scrMain) return vid_scrMain->w;
 	return 0;
 }
 
 // Gets the current height of the screen
-int vid_getScreenHeight()
-{
+int vid_getScreenHeight() {
 	if(vid_scrMain) return vid_scrMain->h;
 	return 0;
 }
 
 // Gets the given textures width
-int vid_getTextureWidth(VidTexture* t)
-{
+int vid_getTextureWidth(VidTexture* t) {
 	if(t != 0) return ((SDL_Surface*)t)->w;
 	return 0;
 }
 
 // Gets the given textures height
-int vid_getTextureHeight(VidTexture* t)
-{
+int vid_getTextureHeight(VidTexture* t) {
 	if(t != 0) return ((SDL_Surface*)t)->h;
 	return 0;
 }
 
 // Saves the current screen as a bitmap
-void vid_saveScreen(const char* file)
-{
+void vid_saveScreen(const char* file) {
 	if(vid_scrMain && file) {
 		SDL_SaveBMP(vid_scrMain, file);
 	}
 }
 
 // Checks if the Video interface is initialized
-char vid_isInit()
-{
+char vid_isInit() {
 	if(vid_isInitFlag == INIT_FLAG_FULL) return 1;
 	return 0;
 }
 
 // Draws a box to the video buffer
-void vid_drawBox(int x, int y, int w, int h, unsigned char r, unsigned char g, unsigned char b, unsigned char opaque)
-{
+void vid_drawBox(int x, int y, int w, int h, unsigned char r, unsigned char g, unsigned char b, unsigned char opaque) {
 	int i, j;
 	if(vid_scrMain) {
 		Uint32 color = SDL_MapRGBA(vid_scrMain->format, r, g, b, 0);
 		SDL_Rect rectBox = {(signed short)x, (signed short)y, (unsigned short)w, (unsigned short)h};
 		if(opaque == 255) {
 			SDL_FillRect(vid_scrMain, &rectBox, color);
-		} else {
+	} else {
 			SDL_Rect shadeBox = {0, 0, (unsigned short)w, (unsigned short)h};
 			SDL_FillRect(vid_shade, &shadeBox, color);
 					
