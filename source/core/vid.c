@@ -1,21 +1,21 @@
 #include "vid.h"
 #include <stdio.h>
 #include <string.h> 
-#include <SDL/SDL.h>
-#include <SDL/SDL_getenv.h>
-#include <SDL/SDL_image.h>
-#include <SDL/SDL_rotozoom.h>
-#include <SDL/SDL_ttf.h>
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
+#include <SDL2/SDL_rotozoom.h>
+#include <SDL2/SDL_ttf.h>
 
 #define INIT_FLAG_NOT 0
 #define INIT_FLAG_PARTIAL 1
 #define INIT_FLAG_FULL 2
 
-#define SURFACE_TYPE SDL_SWSURFACE
+#define SURFACE_TYPE 0
 #define MAX_IMAGE_CACHE_FILENAME_SIZE 256
 
 // Data
 static char vid_isInitFlag = INIT_FLAG_NOT;
+static SDL_Window* vid_window = NULL;
 static SDL_Surface* vid_scrMain = NULL;
 static char vid_cachedImageFilename[MAX_IMAGE_CACHE_FILENAME_SIZE];
 static SDL_Surface* vid_cachedImage = NULL;
@@ -49,26 +49,32 @@ int vid_init()
 		}
 	
 		//get current screen info
-		const SDL_VideoInfo* vInfo = SDL_GetVideoInfo();
-		if (!vInfo) {
-			fprintf(stderr,"vid_init: ERROR in SDL_GetVideoInfo() %s\n", SDL_GetError());
-			vid_close();
-			return 1;
+		SDL_DisplayMode mode;
+		if (SDL_GetCurrentDisplayMode(0, &mode) != 0)
+		{
+   			fprintf(stderr, "%s\n", SDL_GetError());
+    		return 1;
 		}
-		int nResX = vInfo->current_w;
-		int nResY = vInfo->current_h;
-		int nDepth = vInfo->vfmt->BitsPerPixel;
-
+		int nResX = mode.w;
+		int nResY = mode.h;
 		//configure the video mode
 		SDL_ShowCursor(SDL_DISABLE);
-		vid_scrMain = SDL_SetVideoMode(nResX, nResY, nDepth, SURFACE_TYPE); //SDL_HWSURFACE SDL_DOUBLEBUF
-		if(vid_scrMain == 0) {
-			fprintf(stderr,"vid_init: ERROR in SDL_SetVideoMode() %s\n",SDL_GetError());
-			vid_close();
-			return 1;
+		vid_window = SDL_CreateWindow(
+    		"GBConsole",
+   			SDL_WINDOWPOS_CENTERED,
+   			SDL_WINDOWPOS_CENTERED,
+   			nResX,
+   			nResY,
+    		SDL_WINDOW_SHOWN
+		);
+
+		if (!vid_window)
+		{
+   			fprintf(stderr,"%s\n",SDL_GetError());
+    		return 1;
 		}
-	}
-	
+
+		vid_scrMain = SDL_GetWindowSurface(vid_window);
 	//create shade surface
 	vid_shade = SDL_CreateRGBSurface(SURFACE_TYPE, vid_scrMain->w, vid_scrMain->h, vid_scrMain->format->BitsPerPixel, 
 		vid_scrMain->format->Rmask, vid_scrMain->format->Gmask, vid_scrMain->format->Bmask, vid_scrMain->format->Amask);
@@ -133,7 +139,8 @@ void vid_drawBox(int x, int y, int w, int h, unsigned char r, unsigned char g, u
 			SDL_Rect shadeBox = {0, 0, (unsigned short)w, (unsigned short)h};
 			SDL_FillRect(vid_shade, &shadeBox, color);
 					
-			SDL_SetAlpha(vid_shade, SDL_SRCALPHA, opaque);
+			SDL_SetSurfaceBlendMode(surface, SDL_BLENDMODE_BLEND);
+			SDL_SetSurfaceAlphaMod(surface, opaque);
 			SDL_BlitSurface(vid_shade, &shadeBox, vid_scrMain, &rectBox);
 		}
 	}
@@ -229,7 +236,8 @@ void vid_compositeImageToTexture(VidTexture* t, const char* filename, unsigned c
 		SDL_Surface* imgSurfaceOpt = SDL_ConvertSurface(imgSurfaceZoomed, vid_scrMain->format, SURFACE_TYPE);
 		SDL_FreeSurface(imgSurfaceZoomed);
 		
-		SDL_SetAlpha(imgSurfaceOpt, SDL_SRCALPHA, opaque);
+		SDL_SetSurfaceBlendMode(surface, SDL_BLENDMODE_BLEND);
+		SDL_SetSurfaceAlphaMod(surface, opaque);
 		SDL_BlitSurface(imgSurfaceOpt, NULL, tSurface, NULL);
 		SDL_FreeSurface(imgSurfaceOpt);
 	}
@@ -247,7 +255,8 @@ void vid_compositeColorToTexture(VidTexture* t, unsigned char r, unsigned char g
 		SDL_Rect rectBox = {0, 0, (unsigned short)tSurface->w, (unsigned short)tSurface->h};
 		SDL_FillRect(colorSurface, &rectBox, color);
 		
-		SDL_SetAlpha(colorSurface, SDL_SRCALPHA, opaque);
+		SDL_SetSurfaceBlendMode(surface, SDL_BLENDMODE_BLEND);
+		SDL_SetSurfaceAlphaMod(surface, opaque);
 		SDL_BlitSurface(colorSurface, NULL, tSurface, NULL);
 		SDL_FreeSurface(colorSurface);
 	}
@@ -266,7 +275,7 @@ void vid_clearTexture(VidTexture* t)
 void vid_flush()
 {
 	if(vid_scrMain) {
-		SDL_Flip(vid_scrMain);
+		SDL_UpdateWindowSurface(vid_window);
 	}
 }
 
@@ -291,9 +300,13 @@ int vid_clear()
 int vid_close()
 {
 	//clear resources
-	if(vid_scrMain) SDL_FreeSurface(vid_scrMain);
 	vid_scrMain = NULL;
-	vid_clear();
+
+	if (vid_window)
+	{
+    SDL_DestroyWindow(vid_window);
+    vid_window = NULL;
+	}
 	
 	//close down SDL
 	TTF_Quit();
