@@ -37,7 +37,6 @@ int vid_init()
 			vid_close();
 			return 1;
 			}
-		}
 		if(!(IMG_Init(imgFlags) & imgFlags )) {
 			fprintf(stderr, "vid_init: ERROR in IMG_Init() %s\n", IMG_GetError());
 			vid_close();
@@ -48,7 +47,7 @@ int vid_init()
 			vid_close();
 			return 1;
 		}
-	
+	}
 		//get current screen info
 		SDL_DisplayMode mode;
 		if (SDL_GetCurrentDisplayMode(0, &mode) != 0) {
@@ -131,8 +130,8 @@ void vid_drawBox(int x, int y, int w, int h, unsigned char r, unsigned char g, u
 			SDL_Rect shadeBox = {0, 0, (unsigned short)w, (unsigned short)h};
 			SDL_FillRect(vid_shade, &shadeBox, color);
 					
-			SDL_SetSurfaceBlendMode(surface, SDL_BLENDMODE_BLEND);
-			SDL_SetSurfaceAlphaMod(surface, opaque);
+			SDL_SetSurfaceBlendMode(vid_shade, SDL_BLENDMODE_BLEND);
+			SDL_SetSurfaceAlphaMod(vid_shade, opaque);
 			SDL_BlitSurface(vid_shade, &shadeBox, vid_scrMain, &rectBox);
 		}
 	}
@@ -228,8 +227,8 @@ void vid_compositeImageToTexture(VidTexture* t, const char* filename, unsigned c
 		SDL_Surface* imgSurfaceOpt = SDL_ConvertSurface(imgSurfaceZoomed, vid_scrMain->format, SURFACE_TYPE);
 		SDL_FreeSurface(imgSurfaceZoomed);
 		
-		SDL_SetSurfaceBlendMode(surface, SDL_BLENDMODE_BLEND);
-		SDL_SetSurfaceAlphaMod(surface, opaque);
+		SDL_SetSurfaceBlendMode(imgSurfaceOpt, SDL_BLENDMODE_BLEND);
+		SDL_SetSurfaceAlphaMod(imgSurfaceOpt, opaque);
 		SDL_BlitSurface(imgSurfaceOpt, NULL, tSurface, NULL);
 		SDL_FreeSurface(imgSurfaceOpt);
 	}
@@ -247,8 +246,8 @@ void vid_compositeColorToTexture(VidTexture* t, unsigned char r, unsigned char g
 		SDL_Rect rectBox = {0, 0, (unsigned short)tSurface->w, (unsigned short)tSurface->h};
 		SDL_FillRect(colorSurface, &rectBox, color);
 		
-		SDL_SetSurfaceBlendMode(surface, SDL_BLENDMODE_BLEND);
-		SDL_SetSurfaceAlphaMod(surface, opaque);
+		SDL_SetSurfaceBlendMode(colorSurface, SDL_BLENDMODE_BLEND);
+		SDL_SetSurfaceAlphaMod(colorSurface, opaque);
 		SDL_BlitSurface(colorSurface, NULL, tSurface, NULL);
 		SDL_FreeSurface(colorSurface);
 	}
