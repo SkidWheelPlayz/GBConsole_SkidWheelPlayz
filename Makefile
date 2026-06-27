@@ -14,8 +14,8 @@ OBJECTSCXX=$(BUILDDIR)/main.o $(BUILDDIR)/CSettingsManager.o $(BUILDDIR)/CSceneM
 	$(BUILDDIR)/CSceneNode.o $(BUILDDIR)/CRectSceneNode.o $(BUILDDIR)/CImageSceneNode.o $(BUILDDIR)/CTextSceneNode.o  $(BUILDDIR)/COutlineSceneNode.o
 
 # Libraries to Include
-SDLCONFIG=`sdl-config --cflags` `sdl-config --libs`
-LIBRARIES=-lSDL -lSDL_image -lSDL_gfx -lSDL_ttf -lcrypto -lpthread
+SDLCONFIG=`sdl2-config --cflags` `sdl2-config --libs`
+LIBRARIES=-lSDL2_image -lSDL2_gfx -lSDL2_ttf -lcrypto -lpthread
 
 # Compiler
 CC=gcc
