@@ -64,7 +64,7 @@ static const char* gm_listGBA = "data/GameBoyAdvance.json";
 
 static const char* gm_emulatorsPath = "/opt/retropie/libretrocores/";
 static const char* gm_emulatorRetroarch = "/opt/retropie/emulators/retroarch/bin/retroarch";
-static const char* gm_emulationRetroarchConfig = "data/retroarch/retroarch.cfg";
+static const char* gm_emulationRetroarchConfig = "/home/pi/GBConsole/data/retroarch/retroarch.cfg";
 
 static const char* const gm_emulatorsGB[] = { "lr-gambatte", "lr-mgba", 0 };
 static const char* const gm_emulatorExecGB[] = { "gambatte_libretro.so", "mgba_libretro.so", 0 };
