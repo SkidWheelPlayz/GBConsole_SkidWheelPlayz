@@ -193,6 +193,7 @@ int main(int argc, char** argv)
 			menuManager->render();
 			menuManager->clearSceneAssets();
 			vid_close();
+			system("clear");
 			gameManager->playGame(gameManager->getCartridgeCatalogIndex());
 			
 			vid_init();
@@ -218,6 +219,7 @@ int main(int argc, char** argv)
 			menuManager->render();
 			menuManager->clearSceneAssets();
 			vid_close();
+			system("clear");
 			gameManager->playGame(catalogIndex);
 			
 			vid_init();
