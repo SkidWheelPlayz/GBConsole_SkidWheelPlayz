@@ -193,7 +193,7 @@ int main(int argc, char** argv)
 			menuManager->render();
 			menuManager->clearSceneAssets();
 			vid_close();
-			system("clear");
+			system("setterm -cursor off -clear all > /dev/tty1 2>/dev/null");
 			gameManager->playGame(gameManager->getCartridgeCatalogIndex());
 			
 			vid_init();
@@ -219,7 +219,7 @@ int main(int argc, char** argv)
 			menuManager->render();
 			menuManager->clearSceneAssets();
 			vid_close();
-			system("clear");
+			system("setterm -cursor off -clear all > /dev/tty1 2>/dev/null");
 			gameManager->playGame(catalogIndex);
 			
 			vid_init();
