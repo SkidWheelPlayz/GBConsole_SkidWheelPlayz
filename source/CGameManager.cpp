@@ -24,9 +24,9 @@ static const char* gm_romPathGB = "/home/pi/RetroPie/roms/gb/";
 static const char* gm_romPathGBC = "/home/pi/RetroPie/roms/gbc/";
 static const char* gm_romPathGBA = "/home/pi/RetroPie/roms/gba/";
 
-static const char* gm_saveBackupPathGB = "data/backups/gb/";
-static const char* gm_saveBackupPathGBC = "data/backups/gbc/";
-static const char* gm_saveBackupPathGBA = "data/backups/gba/";
+static const char* gm_saveBackupPathGB = "/home/pi/GBConsole/data/backups/gb/";
+static const char* gm_saveBackupPathGBC = "/home/pi/GBConsole/data/backups/gbc/";
+static const char* gm_saveBackupPathGBA = "/home/pi/GBConsole/data/backups/gba/";
 
 static const char* gm_boxartImgPathGB = "/home/pi/libretro/gb/Named_Boxarts/";
 static const char* gm_boxartImgPathGBC = "/home/pi/libretro/gbc/Named_Boxarts/";
