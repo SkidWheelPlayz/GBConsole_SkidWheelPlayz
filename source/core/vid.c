@@ -1,21 +1,21 @@
 #include "vid.h"
 #include <stdio.h>
 #include <string.h> 
-#include <SDL/SDL.h>
-#include <SDL/SDL_getenv.h>
-#include <SDL/SDL_image.h>
-#include <SDL/SDL_rotozoom.h>
-#include <SDL/SDL_ttf.h>
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
+#include <SDL2/SDL2_rotozoom.h>
+#include <SDL2/SDL_ttf.h>
 
 #define INIT_FLAG_NOT 0
 #define INIT_FLAG_PARTIAL 1
 #define INIT_FLAG_FULL 2
 
-#define SURFACE_TYPE SDL_SWSURFACE
+#define SURFACE_TYPE 0
 #define MAX_IMAGE_CACHE_FILENAME_SIZE 256
 
 // Data
 static char vid_isInitFlag = INIT_FLAG_NOT;
+static SDL_Window* vid_window = NULL;
 static SDL_Surface* vid_scrMain = NULL;
 static char vid_cachedImageFilename[MAX_IMAGE_CACHE_FILENAME_SIZE];
 static SDL_Surface* vid_cachedImage = NULL;
@@ -36,7 +36,7 @@ int vid_init()
 			fprintf(stderr, "vid_init: ERROR in SDL_Init() %s\n", SDL_GetError());
 			vid_close();
 			return 1;
-		}
+			}
 		if(!(IMG_Init(imgFlags) & imgFlags )) {
 			fprintf(stderr, "vid_init: ERROR in IMG_Init() %s\n", IMG_GetError());
 			vid_close();
@@ -47,93 +47,91 @@ int vid_init()
 			vid_close();
 			return 1;
 		}
-	
+	}
 		//get current screen info
-		const SDL_VideoInfo* vInfo = SDL_GetVideoInfo();
-		if (!vInfo) {
-			fprintf(stderr,"vid_init: ERROR in SDL_GetVideoInfo() %s\n", SDL_GetError());
-			vid_close();
-			return 1;
+		SDL_DisplayMode mode;
+		if (SDL_GetCurrentDisplayMode(0, &mode) != 0) {
+   			fprintf(stderr, "%s\n", SDL_GetError());
+    		return 1;
 		}
-		int nResX = vInfo->current_w;
-		int nResY = vInfo->current_h;
-		int nDepth = vInfo->vfmt->BitsPerPixel;
-
+		int nResX = mode.w;
+		int nResY = mode.h;
 		//configure the video mode
 		SDL_ShowCursor(SDL_DISABLE);
-		vid_scrMain = SDL_SetVideoMode(nResX, nResY, nDepth, SURFACE_TYPE); //SDL_HWSURFACE SDL_DOUBLEBUF
-		if(vid_scrMain == 0) {
-			fprintf(stderr,"vid_init: ERROR in SDL_SetVideoMode() %s\n",SDL_GetError());
-			vid_close();
-			return 1;
+		vid_window = SDL_CreateWindow(
+    		"GBConsole",
+   			SDL_WINDOWPOS_CENTERED,
+   			SDL_WINDOWPOS_CENTERED,
+   			nResX,
+   			nResY,
+    		SDL_WINDOW_SHOWN
+		);
+
+		if (!vid_window) {
+   			fprintf(stderr,"%s\n",SDL_GetError());
+    		return 1;
 		}
-	}
-	
+
+		vid_scrMain = SDL_GetWindowSurface(vid_window);
 	//create shade surface
 	vid_shade = SDL_CreateRGBSurface(SURFACE_TYPE, vid_scrMain->w, vid_scrMain->h, vid_scrMain->format->BitsPerPixel, 
 		vid_scrMain->format->Rmask, vid_scrMain->format->Gmask, vid_scrMain->format->Bmask, vid_scrMain->format->Amask);
 
 	vid_isInitFlag = INIT_FLAG_FULL;
 	return 0;
-}
+	}
 
 // Gets the current width of the screen
-int vid_getScreenWidth()
-{
+int vid_getScreenWidth() {
 	if(vid_scrMain) return vid_scrMain->w;
 	return 0;
 }
 
 // Gets the current height of the screen
-int vid_getScreenHeight()
-{
+int vid_getScreenHeight() {
 	if(vid_scrMain) return vid_scrMain->h;
 	return 0;
 }
 
 // Gets the given textures width
-int vid_getTextureWidth(VidTexture* t)
-{
+int vid_getTextureWidth(VidTexture* t) {
 	if(t != 0) return ((SDL_Surface*)t)->w;
 	return 0;
 }
 
 // Gets the given textures height
-int vid_getTextureHeight(VidTexture* t)
-{
+int vid_getTextureHeight(VidTexture* t) {
 	if(t != 0) return ((SDL_Surface*)t)->h;
 	return 0;
 }
 
 // Saves the current screen as a bitmap
-void vid_saveScreen(const char* file)
-{
+void vid_saveScreen(const char* file) {
 	if(vid_scrMain && file) {
 		SDL_SaveBMP(vid_scrMain, file);
 	}
 }
 
 // Checks if the Video interface is initialized
-char vid_isInit()
-{
+char vid_isInit() {
 	if(vid_isInitFlag == INIT_FLAG_FULL) return 1;
 	return 0;
 }
 
 // Draws a box to the video buffer
-void vid_drawBox(int x, int y, int w, int h, unsigned char r, unsigned char g, unsigned char b, unsigned char opaque)
-{
+void vid_drawBox(int x, int y, int w, int h, unsigned char r, unsigned char g, unsigned char b, unsigned char opaque) {
 	int i, j;
 	if(vid_scrMain) {
 		Uint32 color = SDL_MapRGBA(vid_scrMain->format, r, g, b, 0);
 		SDL_Rect rectBox = {(signed short)x, (signed short)y, (unsigned short)w, (unsigned short)h};
 		if(opaque == 255) {
 			SDL_FillRect(vid_scrMain, &rectBox, color);
-		} else {
+	} else {
 			SDL_Rect shadeBox = {0, 0, (unsigned short)w, (unsigned short)h};
 			SDL_FillRect(vid_shade, &shadeBox, color);
 					
-			SDL_SetAlpha(vid_shade, SDL_SRCALPHA, opaque);
+			SDL_SetSurfaceBlendMode(vid_shade, SDL_BLENDMODE_BLEND);
+			SDL_SetSurfaceAlphaMod(vid_shade, opaque);
 			SDL_BlitSurface(vid_shade, &shadeBox, vid_scrMain, &rectBox);
 		}
 	}
@@ -229,7 +227,8 @@ void vid_compositeImageToTexture(VidTexture* t, const char* filename, unsigned c
 		SDL_Surface* imgSurfaceOpt = SDL_ConvertSurface(imgSurfaceZoomed, vid_scrMain->format, SURFACE_TYPE);
 		SDL_FreeSurface(imgSurfaceZoomed);
 		
-		SDL_SetAlpha(imgSurfaceOpt, SDL_SRCALPHA, opaque);
+		SDL_SetSurfaceBlendMode(imgSurfaceOpt, SDL_BLENDMODE_BLEND);
+		SDL_SetSurfaceAlphaMod(imgSurfaceOpt, opaque);
 		SDL_BlitSurface(imgSurfaceOpt, NULL, tSurface, NULL);
 		SDL_FreeSurface(imgSurfaceOpt);
 	}
@@ -247,7 +246,8 @@ void vid_compositeColorToTexture(VidTexture* t, unsigned char r, unsigned char g
 		SDL_Rect rectBox = {0, 0, (unsigned short)tSurface->w, (unsigned short)tSurface->h};
 		SDL_FillRect(colorSurface, &rectBox, color);
 		
-		SDL_SetAlpha(colorSurface, SDL_SRCALPHA, opaque);
+		SDL_SetSurfaceBlendMode(colorSurface, SDL_BLENDMODE_BLEND);
+		SDL_SetSurfaceAlphaMod(colorSurface, opaque);
 		SDL_BlitSurface(colorSurface, NULL, tSurface, NULL);
 		SDL_FreeSurface(colorSurface);
 	}
@@ -266,7 +266,7 @@ void vid_clearTexture(VidTexture* t)
 void vid_flush()
 {
 	if(vid_scrMain) {
-		SDL_Flip(vid_scrMain);
+		SDL_UpdateWindowSurface(vid_window);
 	}
 }
 
@@ -291,9 +291,13 @@ int vid_clear()
 int vid_close()
 {
 	//clear resources
-	if(vid_scrMain) SDL_FreeSurface(vid_scrMain);
 	vid_scrMain = NULL;
-	vid_clear();
+
+	if (vid_window)
+	{
+    SDL_DestroyWindow(vid_window);
+    vid_window = NULL;
+	}
 	
 	//close down SDL
 	TTF_Quit();

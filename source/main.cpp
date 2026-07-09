@@ -192,7 +192,8 @@ int main(int argc, char** argv)
 			menuManager->setPageNull("Loading");
 			menuManager->render();
 			menuManager->clearSceneAssets();
-			vid_clear();
+			vid_close();
+			system("setterm -cursor off -clear all > /dev/tty1 2>/dev/null");
 			gameManager->playGame(gameManager->getCartridgeCatalogIndex());
 			
 			vid_init();
@@ -217,7 +218,8 @@ int main(int argc, char** argv)
 			menuManager->setPageNull("Loading");
 			menuManager->render();
 			menuManager->clearSceneAssets();
-			vid_clear();
+			vid_close();
+			system("setterm -cursor off -clear all > /dev/tty1 2>/dev/null");
 			gameManager->playGame(catalogIndex);
 			
 			vid_init();

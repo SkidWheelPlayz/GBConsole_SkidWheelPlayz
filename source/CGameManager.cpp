@@ -24,9 +24,9 @@ static const char* gm_romPathGB = "/home/pi/RetroPie/roms/gb/";
 static const char* gm_romPathGBC = "/home/pi/RetroPie/roms/gbc/";
 static const char* gm_romPathGBA = "/home/pi/RetroPie/roms/gba/";
 
-static const char* gm_saveBackupPathGB = "data/backups/gb/";
-static const char* gm_saveBackupPathGBC = "data/backups/gbc/";
-static const char* gm_saveBackupPathGBA = "data/backups/gba/";
+static const char* gm_saveBackupPathGB = "/home/pi/GBConsole/data/backups/gb/";
+static const char* gm_saveBackupPathGBC = "/home/pi/GBConsole/data/backups/gbc/";
+static const char* gm_saveBackupPathGBA = "/home/pi/GBConsole/data/backups/gba/";
 
 static const char* gm_boxartImgPathGB = "/home/pi/libretro/gb/Named_Boxarts/";
 static const char* gm_boxartImgPathGBC = "/home/pi/libretro/gbc/Named_Boxarts/";
@@ -64,7 +64,7 @@ static const char* gm_listGBA = "data/GameBoyAdvance.json";
 
 static const char* gm_emulatorsPath = "/opt/retropie/libretrocores/";
 static const char* gm_emulatorRetroarch = "/opt/retropie/emulators/retroarch/bin/retroarch";
-static const char* gm_emulationRetroarchConfig = "data/retroarch/retroarch.cfg";
+static const char* gm_emulationRetroarchConfig = "/home/pi/GBConsole/data/retroarch/retroarch.cfg";
 
 static const char* const gm_emulatorsGB[] = { "lr-gambatte", "lr-mgba", 0 };
 static const char* const gm_emulatorExecGB[] = { "gambatte_libretro.so", "mgba_libretro.so", 0 };
@@ -624,17 +624,17 @@ void CGameManager::playGame(int index)
 				sprintf(romFilename, "%s%s%s", gm_romPathGB, filename, gm_romExGB);
 				sprintf(saveFilename, "%s%s%s", gm_romPathGB, filename, gm_saveExGB);
 				sprintf(emuSaveFilename, "%s%s%s", gm_romPathGB, filename, gm_emulatorSaveExGB[emulator]);
-				sprintf(runCommand, "%s -L %s%s/%s --config %s  \"%s\"", gm_emulatorRetroarch, gm_emulatorsPath, gm_emulatorsGB[emulator], gm_emulatorExecGB[emulator], gm_emulationRetroarchConfig, romFilename);
+				sprintf(runCommand, "sudo -u pi HOME=/home/pi %s -L %s%s/%s --config %s \"%s\"", gm_emulatorRetroarch, gm_emulatorsPath, gm_emulatorsGB[emulator], gm_emulatorExecGB[emulator], gm_emulationRetroarchConfig, romFilename);
 			} else if(strcmp(strrchr(catalogFilenames[index], '.'), gm_romExGBC)==0) {
 				sprintf(romFilename, "%s%s%s", gm_romPathGBC, filename, gm_romExGBC);
 				sprintf(saveFilename, "%s%s%s", gm_romPathGBC, filename, gm_saveExGBC);
 				sprintf(emuSaveFilename, "%s%s%s", gm_romPathGBC, filename, gm_emulatorSaveExGB[emulator]);
-				sprintf(runCommand, "%s -L %s%s/%s --config %s  \"%s\"", gm_emulatorRetroarch, gm_emulatorsPath, gm_emulatorsGB[emulator], gm_emulatorExecGB[emulator], gm_emulationRetroarchConfig, romFilename);
+				sprintf(runCommand, "sudo -u pi HOME=/home/pi %s -L %s%s/%s --config %s \"%s\"", gm_emulatorRetroarch, gm_emulatorsPath, gm_emulatorsGB[emulator], gm_emulatorExecGB[emulator], gm_emulationRetroarchConfig, romFilename);
 			} else if(strcmp(strrchr(catalogFilenames[index], '.'), gm_romExGBA)==0) {
 				sprintf(romFilename, "%s%s%s", gm_romPathGBA, filename, gm_romExGBA);
 				sprintf(saveFilename, "%s%s%s", gm_romPathGBA, filename, gm_saveExGBA);
 				sprintf(emuSaveFilename, "%s%s%s", gm_romPathGBA, filename, gm_emulatorSaveExGBA[emulator]);
-				sprintf(runCommand, "%s -L %s%s/%s --config %s  \"%s\"", gm_emulatorRetroarch, gm_emulatorsPath, gm_emulatorsGBA[emulator], gm_emulatorExecGBA[emulator], gm_emulationRetroarchConfig, romFilename);
+				sprintf(runCommand, "sudo -u pi HOME=/home/pi %s -L %s%s/%s --config %s \"%s\"", gm_emulatorRetroarch, gm_emulatorsPath, gm_emulatorsGBA[emulator], gm_emulatorExecGBA[emulator], gm_emulationRetroarchConfig, romFilename);
 			}
 			
 			//match save file extension to what emulator expects
