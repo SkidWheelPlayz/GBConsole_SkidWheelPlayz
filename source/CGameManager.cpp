@@ -69,9 +69,11 @@ static const char* gm_emulationRetroarchConfig = "/home/pi/GBConsole/data/retroa
 static const char* const gm_emulatorsGB[] = { "lr-gambatte", "lr-mgba", 0 };
 static const char* const gm_emulatorExecGB[] = { "gambatte_libretro.so", "mgba_libretro.so", 0 };
 static const char* const gm_emulatorSaveExGB[] = { ".srm", ".srm", 0 };
+static const char* const gm_emulatorSaveFolderGB[] = { "Gambatte", "mGBA", 0 };
 static const char* const gm_emulatorsGBA[] = { "lr-gpsp", "lr-mgba", 0 };
 static const char* const gm_emulatorExecGBA[] = { "gpsp_libretro.so", "mgba_libretro.so", 0 };
 static const char* const gm_emulatorSaveExGBA[] = { ".sav", ".srm", 0 };
+static const char* const gm_emulatorSaveFolderGBA[] = { "gpSP", "mGBA", 0 };
 
 static const char* gm_emulatorSettingGB = "game.gb.emulator";
 static const char* gm_emulatorSettingGBA = "game.gba.emulator";
@@ -100,7 +102,13 @@ static int gm_strLevenshtein(const char* s, const char* t);
 static bool gm_fileExists(const char* filename);
 static bool gm_directoryExists(const char* dirname);
 static void gm_ensureDirectory(const char* dirname);
+static void gm_ensureSystemDirectory(const char* dirname);
 static void gm_renameFile(const char* from, const char* to);
+static int gm_getEmulatorIndex(const char* const* emulators, const char* emulatorName);
+static int gm_getSelectedGBEmulatorIndex(int selectedEmulatorGB, int numEmulatorsGB, char** availableEmulatorsGB);
+static int gm_getSelectedGBAEmulatorIndex(int selectedEmulatorGBA, int numEmulatorsGBA, char** availableEmulatorsGBA);
+static void gm_buildCoreSaveDirectory(char* out, const char* romPath, const char* coreFolder);
+static void gm_buildCoreSaveFilename(char* out, const char* romPath, const char* coreFolder, const char* filename, const char* saveExt);
 static int gm_compareCatalogElements(const void* elem1, const void* elem2);
 
 //! Main constructor
@@ -381,15 +389,28 @@ int CGameManager::syncCartridgeEstimateTime(bool updateCartSave)
 	//build file names
 	char romFilename[1024];
 	char saveFilename[1024];
+	int emulator = -1;
+	const char* saveFolder = 0;
+	const char* saveExt = 0;
+
 	if(cartType == CARTRIDGE_TYPE_GB) {
+		emulator = gm_getSelectedGBEmulatorIndex(selectedEmulatorGB, numEmulatorsGB, availableEmulatorsGB);
+		saveFolder = emulator > -1 ? gm_emulatorSaveFolderGB[emulator] : 0;
+		saveExt = emulator > -1 ? gm_emulatorSaveExGB[emulator] : gm_saveExGB;
 		sprintf(romFilename, "%s%s%s", gm_romPathGB, cartFilename, gm_romExGB);
-		sprintf(saveFilename, "%s%s%s", gm_romPathGB, cartFilename, gm_saveExGB);
+		gm_buildCoreSaveFilename(saveFilename, gm_romPathGB, saveFolder, cartFilename, saveExt);
 	} else if(cartType == CARTRIDGE_TYPE_GBC) {
+		emulator = gm_getSelectedGBEmulatorIndex(selectedEmulatorGB, numEmulatorsGB, availableEmulatorsGB);
+		saveFolder = emulator > -1 ? gm_emulatorSaveFolderGB[emulator] : 0;
+		saveExt = emulator > -1 ? gm_emulatorSaveExGB[emulator] : gm_saveExGBC;
 		sprintf(romFilename, "%s%s%s", gm_romPathGBC, cartFilename, gm_romExGBC);
-		sprintf(saveFilename, "%s%s%s", gm_romPathGBC, cartFilename, gm_saveExGBC);
+		gm_buildCoreSaveFilename(saveFilename, gm_romPathGBC, saveFolder, cartFilename, saveExt);
 	} else if(cartType == CARTRIDGE_TYPE_GBA) {
+		emulator = gm_getSelectedGBAEmulatorIndex(selectedEmulatorGBA, numEmulatorsGBA, availableEmulatorsGBA);
+		saveFolder = emulator > -1 ? gm_emulatorSaveFolderGBA[emulator] : 0;
+		saveExt = emulator > -1 ? gm_emulatorSaveExGBA[emulator] : gm_saveExGBA;
 		sprintf(romFilename, "%s%s%s", gm_romPathGBA, cartFilename, gm_romExGBA);
-		sprintf(saveFilename, "%s%s%s", gm_romPathGBA, cartFilename, gm_saveExGBA);
+		gm_buildCoreSaveFilename(saveFilename, gm_romPathGBA, saveFolder, cartFilename, saveExt);
 	}
 	
 	//get ROM if not already saved
@@ -431,23 +452,32 @@ bool CGameManager::syncCartridge(bool updateCartSave)
 	char catalogFilename[1024];
 	char saveFilename[1024];
 	char backupFilename[1024];
+	int emulator = -1;
+	const char* saveFolder = 0;
+	const char* saveExt = 0;
+
 	if(cartType == CARTRIDGE_TYPE_GB) {
+		emulator = gm_getSelectedGBEmulatorIndex(selectedEmulatorGB, numEmulatorsGB, availableEmulatorsGB);
+		saveFolder = emulator > -1 ? gm_emulatorSaveFolderGB[emulator] : 0;
+		saveExt = emulator > -1 ? gm_emulatorSaveExGB[emulator] : gm_saveExGB;
 		sprintf(romFilename, "%s%s%s", gm_romPathGB, cartFilename, gm_romExGB);
-		sprintf(catalogFilename, "%s%s", cartFilename, gm_romExGB);
-		sprintf(saveFilename, "%s%s%s", gm_romPathGB, cartFilename, gm_saveExGB);
-		sprintf(backupFilename, "%s%s%s", gm_saveBackupPathGB, cartFilename, gm_saveExGB);
+		gm_buildCoreSaveFilename(saveFilename, gm_romPathGB, saveFolder, cartFilename, saveExt);
 	} else if(cartType == CARTRIDGE_TYPE_GBC) {
+		emulator = gm_getSelectedGBEmulatorIndex(selectedEmulatorGB, numEmulatorsGB, availableEmulatorsGB);
+		saveFolder = emulator > -1 ? gm_emulatorSaveFolderGB[emulator] : 0;
+		saveExt = emulator > -1 ? gm_emulatorSaveExGB[emulator] : gm_saveExGBC;
 		sprintf(romFilename, "%s%s%s", gm_romPathGBC, cartFilename, gm_romExGBC);
-		sprintf(catalogFilename, "%s%s", cartFilename, gm_romExGBC);
-		sprintf(saveFilename, "%s%s%s", gm_romPathGBC, cartFilename, gm_saveExGBC);
-		sprintf(backupFilename, "%s%s%s", gm_saveBackupPathGBC, cartFilename, gm_saveExGBC);
+		gm_buildCoreSaveFilename(saveFilename, gm_romPathGBC, saveFolder, cartFilename, saveExt);
 	} else if(cartType == CARTRIDGE_TYPE_GBA) {
+		emulator = gm_getSelectedGBAEmulatorIndex(selectedEmulatorGBA, numEmulatorsGBA, availableEmulatorsGBA);
+		saveFolder = emulator > -1 ? gm_emulatorSaveFolderGBA[emulator] : 0;
+		saveExt = emulator > -1 ? gm_emulatorSaveExGBA[emulator] : gm_saveExGBA;
 		sprintf(romFilename, "%s%s%s", gm_romPathGBA, cartFilename, gm_romExGBA);
-		sprintf(catalogFilename, "%s%s", cartFilename, gm_romExGBA);
-		sprintf(saveFilename, "%s%s%s", gm_romPathGBA, cartFilename, gm_saveExGBA);
-		sprintf(backupFilename, "%s%s%s", gm_saveBackupPathGBA, cartFilename, gm_saveExGBA);
+		gm_buildCoreSaveFilename(saveFilename, gm_romPathGBA, saveFolder, cartFilename, saveExt);
 	}
-	
+	char saveDirectory[1024];
+	gm_buildCoreSaveDirectory(saveDirectory, cartType == CARTRIDGE_TYPE_GBA ? gm_romPathGBA : cartType == CARTRIDGE_TYPE_GBC ? gm_romPathGBC : gm_romPathGB, saveFolder);
+	gm_ensureSystemDirectory(saveDirectory);
 	//resources
 	FILE* romFile = NULL;
 	FILE* saveFile = NULL;
@@ -620,32 +650,36 @@ void CGameManager::playGame(int index)
 			strcpy(filename, catalogFilenames[index]);
 			strrchr(filename, '.')[0] = 0;
 			char runCommand[1024];
+			char saveDirectory[1024];
 			if(strcmp(strrchr(catalogFilenames[index], '.'), gm_romExGB)==0) {
 				sprintf(romFilename, "%s%s%s", gm_romPathGB, filename, gm_romExGB);
-				sprintf(saveFilename, "%s%s%s", gm_romPathGB, filename, gm_saveExGB);
+				gm_buildCoreSaveDirectory(saveDirectory, gm_romPathGB, gm_emulatorSaveFolderGB[emulator]);
+				gm_buildCoreSaveFilename(saveFilename, gm_romPathGB, gm_emulatorSaveFolderGB[emulator], filename, gm_emulatorSaveExGB[emulator]);
 				sprintf(emuSaveFilename, "%s%s%s", gm_romPathGB, filename, gm_emulatorSaveExGB[emulator]);
 				sprintf(runCommand, "sudo -u pi HOME=/home/pi %s -L %s%s/%s --config %s \"%s\"", gm_emulatorRetroarch, gm_emulatorsPath, gm_emulatorsGB[emulator], gm_emulatorExecGB[emulator], gm_emulationRetroarchConfig, romFilename);
 			} else if(strcmp(strrchr(catalogFilenames[index], '.'), gm_romExGBC)==0) {
 				sprintf(romFilename, "%s%s%s", gm_romPathGBC, filename, gm_romExGBC);
-				sprintf(saveFilename, "%s%s%s", gm_romPathGBC, filename, gm_saveExGBC);
+				gm_buildCoreSaveDirectory(saveDirectory, gm_romPathGBC, gm_emulatorSaveFolderGB[emulator]);
+				gm_buildCoreSaveFilename(saveFilename, gm_romPathGBC, gm_emulatorSaveFolderGB[emulator], filename, gm_emulatorSaveExGB[emulator]);
 				sprintf(emuSaveFilename, "%s%s%s", gm_romPathGBC, filename, gm_emulatorSaveExGB[emulator]);
 				sprintf(runCommand, "sudo -u pi HOME=/home/pi %s -L %s%s/%s --config %s \"%s\"", gm_emulatorRetroarch, gm_emulatorsPath, gm_emulatorsGB[emulator], gm_emulatorExecGB[emulator], gm_emulationRetroarchConfig, romFilename);
 			} else if(strcmp(strrchr(catalogFilenames[index], '.'), gm_romExGBA)==0) {
 				sprintf(romFilename, "%s%s%s", gm_romPathGBA, filename, gm_romExGBA);
-				sprintf(saveFilename, "%s%s%s", gm_romPathGBA, filename, gm_saveExGBA);
+				gm_buildCoreSaveDirectory(saveDirectory, gm_romPathGBA, gm_emulatorSaveFolderGBA[emulator]);
+				gm_buildCoreSaveFilename(saveFilename, gm_romPathGBA, gm_emulatorSaveFolderGBA[emulator], filename, gm_emulatorSaveExGBA[emulator]);
 				sprintf(emuSaveFilename, "%s%s%s", gm_romPathGBA, filename, gm_emulatorSaveExGBA[emulator]);
 				sprintf(runCommand, "sudo -u pi HOME=/home/pi %s -L %s%s/%s --config %s \"%s\"", gm_emulatorRetroarch, gm_emulatorsPath, gm_emulatorsGBA[emulator], gm_emulatorExecGBA[emulator], gm_emulationRetroarchConfig, romFilename);
 			}
 			
 			//match save file extension to what emulator expects
+			gm_ensureSystemDirectory(saveDirectory);
 			gm_renameFile(saveFilename, emuSaveFilename);
-			
-			//run rom
+
 			if(gm_fileExists(romFilename)) {
-				system(runCommand);
+    			system(runCommand);
 			}
-			
-			//move save file extension to system standard
+
+			gm_ensureSystemDirectory(saveDirectory);
 			gm_renameFile(emuSaveFilename, saveFilename);
 		}
 	}
@@ -1435,6 +1469,72 @@ static void gm_renameFile(const char* from, const char* to) {
 	char command[1024];
 	sprintf(command, "sudo mv \"%s\" \"%s\" > /dev/null 2>&1", from, to);
 	system(command);
+}
+static void gm_ensureSystemDirectory(const char* dirname) {
+	if(dirname == 0 || dirname[0] == 0 || gm_directoryExists(dirname)) return;
+
+	char command[1024];
+	sprintf(command, "sudo -u$USER mkdir -p -m=0777 \"%s\"", dirname);
+	system(command);
+}
+
+static int gm_getEmulatorIndex(const char* const* emulators, const char* emulatorName) {
+	for(int i=0; emulators[i]; i++) {
+		if(strcmp(emulators[i], emulatorName)==0) return i;
+	}
+	return -1;
+}
+
+static int gm_getSelectedGBEmulatorIndex(int selectedEmulatorGB, int numEmulatorsGB, char** availableEmulatorsGB) {
+	if(selectedEmulatorGB > 0) {
+		return gm_getEmulatorIndex(gm_emulatorsGB, availableEmulatorsGB[selectedEmulatorGB]);
+	}
+
+	if(numEmulatorsGB > 1) {
+		int emulator = gm_getEmulatorIndex(gm_emulatorsGB, availableEmulatorsGB[1]);
+		for(int i=1; i<numEmulatorsGB; i++) {
+			if(strcmp(availableEmulatorsGB[i], "lr-gambatte")==0) return gm_getEmulatorIndex(gm_emulatorsGB, "lr-gambatte");
+		}
+		return emulator;
+	}
+
+	return -1;
+}
+
+static int gm_getSelectedGBAEmulatorIndex(int selectedEmulatorGBA, int numEmulatorsGBA, char** availableEmulatorsGBA) {
+	if(selectedEmulatorGBA > 0) {
+		return gm_getEmulatorIndex(gm_emulatorsGBA, availableEmulatorsGBA[selectedEmulatorGBA]);
+	}
+
+	if(numEmulatorsGBA > 1) {
+		int emulator = gm_getEmulatorIndex(gm_emulatorsGBA, availableEmulatorsGBA[1]);
+
+		char biosFile[1024];
+		sprintf(biosFile, "%s%s", gm_biosPathGBA, gm_biosGBA);
+		if(gm_fileExists(biosFile)) {
+			for(int i=1; i<numEmulatorsGBA; i++) {
+				if(strcmp(availableEmulatorsGBA[i], "lr-gpsp")==0) return gm_getEmulatorIndex(gm_emulatorsGBA, "lr-gpsp");
+			}
+		} else {
+			for(int i=1; i<numEmulatorsGBA; i++) {
+				if(strcmp(availableEmulatorsGBA[i], "lr-mgba")==0) return gm_getEmulatorIndex(gm_emulatorsGBA, "lr-mgba");
+			}
+		}
+
+		return emulator;
+	}
+
+	return -1;
+}
+
+static void gm_buildCoreSaveDirectory(char* out, const char* romPath, const char* coreFolder) {
+	if(coreFolder != 0 && coreFolder[0] != 0) sprintf(out, "%s%s/", romPath, coreFolder);
+	else sprintf(out, "%s", romPath);
+}
+
+static void gm_buildCoreSaveFilename(char* out, const char* romPath, const char* coreFolder, const char* filename, const char* saveExt) {
+	if(coreFolder != 0 && coreFolder[0] != 0) sprintf(out, "%s%s/%s%s", romPath, coreFolder, filename, saveExt);
+	else sprintf(out, "%s%s%s", romPath, filename, saveExt);
 }
 static int gm_compareCatalogElements(const void* elem1, const void* elem2) {
     char* name1 = ((char**)elem1)[0];
