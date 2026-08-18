@@ -457,7 +457,7 @@ bool CGameManager::syncCartridge(bool updateCartSave)
 	
 	//get ROM if not already saved
 	if(!gm_fileExists(romFilename)) {
-		romFile = fopen(romFilename, "w");
+		romFile = fopen(romFilename, "wb");
 		if(romFile != NULL) {
 			romData = new char[gbx_getROMSize()];
 			if(gbx_readROM(romData) != gbx_getROMSize()) {
@@ -482,7 +482,7 @@ bool CGameManager::syncCartridge(bool updateCartSave)
 			//update the system save data
 			if(gm_fileExists(saveFilename)) {
 				saveFile = fopen(saveFilename, "rb");
-				saveBackupFile = fopen(backupFilename, "w");
+				saveBackupFile = fopen(backupFilename, "wb");
 				if(saveFile != NULL && saveBackupFile != NULL) {
 					fseek(saveFile, 0, SEEK_END);
 					long savefilelen = ftell(saveFile);
@@ -496,8 +496,8 @@ bool CGameManager::syncCartridge(bool updateCartSave)
 		} else {
 			
 			//get the cartridge save data
-			saveFile = fopen(saveFilename, "w");
-			saveBackupFile = fopen(backupFilename, "w");
+			saveFile = fopen(saveFilename, "wb");
+			saveBackupFile = fopen(backupFilename, "wb");
 			if(saveFile != NULL && saveBackupFile != NULL) {
 				saveData = new char[gbx_getSaveSize()];
 				if(gbx_readSave(saveData) != gbx_getSaveSize()) {
